@@ -73,11 +73,11 @@ class DataApiTest(APITestCase):
 
         client = APIClient()
         response = client.get('/data/')
-        self.assertEqual(len(response.data), 3)
+        self.assertEqual(len(response.data.get('results')), 3)
         response = client.get('/data/?customerId=1')
-        self.assertEqual(len(response.data), 2)
+        self.assertEqual(len(response.data.get('results')), 2)
         response = client.get('/data/?language=EN')
-        self.assertEqual(len(response.data), 2)
+        self.assertEqual(len(response.data.get('results')), 2)
         response = client.get('/data/?customerId=1&language=EN')
 
     def test_get_data_order(self):
@@ -99,9 +99,27 @@ class DataApiTest(APITestCase):
 
         client = APIClient()
         response = client.get('/data/')
-        self.assertEqual(len(response.data), 2)
-        self.assertEqual(response.data[0].get('text'), 'Second')
-        self.assertEqual(response.data[1].get('text'), 'First')
+        self.assertEqual(len(response.data.get('results')), 2)
+        results = response.data.get('results')
+        self.assertEqual(results[0].get('text'), 'Second')
+        self.assertEqual(results[1].get('text'), 'First')
+
+    def test_get_data_pagination(self):
+        for i in range(120):
+            Data.objects.create(
+                customer_id=1,
+                dialog_id=i,
+                text="hello",
+                language="IT",
+                consent=True,
+            )
+
+        client = APIClient()
+        response = client.get('/data/')
+        self.assertEqual(len(response.data.get('results')), 100)
+
+        response = client.get('/data/?page=2')
+        self.assertEqual(len(response.data.get('results')), 20)
 
     def test_post_consents(self):
 

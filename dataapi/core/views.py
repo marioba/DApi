@@ -1,15 +1,16 @@
+from rest_framework import generics
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
 from dataapi.core.models import Data
 from dataapi.core.serializers import DataSerializer
 
-class DataView(APIView):
+class DataView(generics.ListCreateAPIView):
+    serializer_class = DataSerializer
 
-    def get(self, request, **kwargs):
-        language = request.query_params.get('language', None)
-        customerId = request.query_params.get('customerId', None)
-
+    def get_queryset(self):
+        language = self.request.query_params.get('language', None)
+        customerId = self.request.query_params.get('customerId', None)
         queryset = Data.objects.filter(consent=True).order_by('-created_at')
 
         if language:
@@ -18,8 +19,7 @@ class DataView(APIView):
         if customerId:
             queryset = queryset.filter(customer_id=customerId)
 
-        return Response(DataSerializer(queryset, many=True).data)
-
+        return queryset
 
     def post(self, request, customerId, dialogId):
         text = request.data.get('text', None)
