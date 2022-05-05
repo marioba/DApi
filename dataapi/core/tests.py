@@ -7,9 +7,6 @@ from .models import Data
 class DataApiTest(APITestCase):
 
     def test_post_data(self):
-        # Post data
-        # test is present in the db correctly
-
         client = APIClient()
         response = client.post('/data/1/2', {'text': 'Start at the end and work back.', 'language': 'EN'})
 
@@ -24,21 +21,6 @@ class DataApiTest(APITestCase):
 
 
     def test_get_data(self):
-        # create 3 data
-        # - user 1 lang EN
-        # - user 1 lang IT
-        # - user 2 lang EN
-        # - user 2 lang EN without consent
-
-        # test get all
-        # test get user 1
-        # test get lang EN
-        # test get user 1 lang EN
-
-        # test pagination
-        # test sorted by most recent first
-
-
         Data.objects.create(
             customer_id=1,
             dialog_id=1,
