@@ -10,7 +10,7 @@ class DataView(APIView):
         language = request.query_params.get('language', None)
         customerId = request.query_params.get('customerId', None)
 
-        queryset = Data.objects.filter(consent=True)
+        queryset = Data.objects.filter(consent=True).order_by('-created_at')
 
         if language:
             queryset = queryset.filter(language=language)

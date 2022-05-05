@@ -80,6 +80,29 @@ class DataApiTest(APITestCase):
         self.assertEqual(len(response.data), 2)
         response = client.get('/data/?customerId=1&language=EN')
 
+    def test_get_data_order(self):
+        Data.objects.create(
+            customer_id=1,
+            dialog_id=1,
+            text="First",
+            language="EN",
+            consent=True,
+        )
+
+        Data.objects.create(
+            customer_id=1,
+            dialog_id=2,
+            text="Second",
+            language="IT",
+            consent=True,
+        )
+
+        client = APIClient()
+        response = client.get('/data/')
+        self.assertEqual(len(response.data), 2)
+        self.assertEqual(response.data[0].get('text'), 'Second')
+        self.assertEqual(response.data[1].get('text'), 'First')
+
     def test_post_consents(self):
 
         Data.objects.create(
