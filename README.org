@@ -1,0 +1,128 @@
+* Architecture
+The application is based on Django + Django Rest Framework and
+PostgreSQL and runs inside 2 Docker containers defined in the
+=docker-compose.yml= file.
+
+Django is a full-stack open-source web framework and follows
+a Model View Template type of architecture. It is comprised of
+a set of components and modules that aids in faster development
+
+Django REST framework is a powerful and flexible toolkit for building
+Web APIs. Its main benefit is that it makes serialization very easy.
+
+A classic RDBMS was chosen for data storage: PostgreSQL (running in a
+docker container).
+
+Since this application does not require extremely low response times
+and should not have very large spikes in traffic or require real-time
+analytics the need to use an in-memory database was considered
+unnecessary.
+
+PostgreSQL was chosen because it is one of the most popular and
+well-regarded open-source relational databases in the world. However,
+due to the fact that Django supports multiple database types and uses
+an ORM for abstraction, changing the database is always possible with
+little effort.
+
+** Data Model
+The datamodel is composed by two tables. =Dialog= and =Consent=.
+
+The =Dialog= table represent the customer's input during their dialog
+with the chatbot. Although the endpoint is called "data" it has been
+avoided to use a generic name like "data" for the table in favor of
+"dialog" that better describes its content.
+
+The =dialog_id= has been defined as the primary key since it should be
+possible to uniquely identify a =Dialog= based on its id.
+
+Since the requirements call for using a =POST consents/= endpoint to
+record the user's consent and the http POST verb is commonly used to
+create a new resource, the consent is represented by a separate =Consent=
+table that has a one-to-one relationship with =Dialog=. An alternative
+might have been to record the consent as a =Dialog= field and use a
+=PATCH data/= endpoint to update it.
+
+* Run the application
+To run the application run the =docker-compose up= command from the top
+level directory of the repository and run the Django migrations
+to the database
+
+#+begin_src sh
+  docker-compose up -d
+  docker-compose exec web python manage.py migrate
+#+end_src
+
+This will start the Django app listening on [[http://localhost:8000]]
+
+* Endpoints
+It can be used, for example from the command line with cURL like this:
+** Push new data
+To insert new data, the endpoint =POST /data/${customerId}/${dialogId}= is defined. 
+
+It can be used like this:
+#+begin_src sh
+  curl -X POST http://127.0.0.1:8000/data/1/1 --data '{"text": "Hello, World", "language": "EN"}' -H "Content-Type:application/json"
+#+end_src
+
+An alternative would have been to pass the "dialogId" and the
+"customerId" paramenters used for the creation, in the payload, instead of as path
+parameters, avoiding to use a url that at the time it is called
+represents a resource that has not yet been created.
+
+** Set the user's consent
+The =POST /consents/${dialogId}= endpoint is used to set the user's
+consent to store and use their data.
+
+It can be used like this:
+#+begin_src sh
+  curl -X POST http://127.0.0.1:8000/consents/1 --data '{"approved": "true"}' -H "Content-Type:application/json"
+#+end_src
+
+An alternative, mentioned earlier could have been to do a PATCH call
+on the Dialog updating a single field (or directly add the consens
+parameter to the body of the Dialog creation POST request).
+
+** Retrieve data
+The =GET /data/(?language=${language}|customerId=${customerId})=
+endpoint is used to retrieve stored for which there is the user's
+consent. It is paginated and sorted by most recent data first.
+
+#+begin_src sh
+  # The query params are optional
+  curl -X GET http://127.0.0.1:8000/data/?language="EN"&customerId=1
+#+end_src
+
+This will return a paginated response structured like:
+
+#+begin_src json
+  {
+      "count":1,
+      "next":null,
+      "previous":null,
+      "results":
+      [{
+          "customerId":1,
+          "dialogId":2,
+          "text":"Hello, World",
+          "language":"EN"
+      }]
+  }
+#+end_src
+
+* Tests
+To run the automated tests, run the following command from the top
+level directory of the repository
+
+#+begin_src sh
+  docker-compose exec web python manage.py test
+#+end_src
+* Further improvements
+
+Since the data is written to the application and only later retrieved
+for processing by data scientists, in case of a large number of
+clients recording data at the same time, a solution with an in-memory
+database (e.g. Redis) where the data is written to redis first and
+then push it out to Postgres later (maybe only when the consent is given),
+could help to ensure good write performances and less load on the
+RDBMS.
+
