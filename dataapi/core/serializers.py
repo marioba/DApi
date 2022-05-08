@@ -5,7 +5,8 @@ from dataapi.core.models import Dialog, Consent
 
 class DialogSerializer(serializers.ModelSerializer):
 
-    # TODO: comment
+    # Here we associate parameters with variable names that do not
+    # match because of camelCase
     customerId = serializers.IntegerField(source="customer_id")
     dialogId = serializers.IntegerField(source="dialog_id")
 

@@ -10,7 +10,10 @@ class CreateDataView(generics.CreateAPIView):
 
     serializer_class = DialogSerializer
 
-    # TODO: explain
+    # The serializers in django rest framework, expect to find all the
+    # fields to create an object in the body of the request. Here we
+    # copy the parameters received via path params into the request
+    # data.
     def create(self, request, *args, **kwargs):
         data = request.data.copy()
         data.update({'customerId': kwargs['customerId'], 'dialogId': kwargs['dialogId']})
@@ -26,11 +29,10 @@ class ListDataView(generics.ListAPIView):
 
     serializer_class = DialogSerializer
 
-    # TODO: explain
+    # We override the get_queryset method to implement the filters
+    # defined by the query params
     def get_queryset(self):
-        queryset = Dialog.objects.filter(
-            consent__approved=True
-        ).order_by('-created_at')
+        queryset = Dialog.objects.filter(consent__approved=True).order_by('-created_at')
 
         language = self.request.query_params.get('language', None)
         if language is not None:
@@ -48,8 +50,15 @@ class ConsentsView(generics.CreateAPIView):
 
     serializer_class = ConsentSerializer
 
+    # The serializers in django rest framework, expect to find all the
+    # fields to create an object in the body of the request. Here we
+    # copy the parameters received via path params into the request
+    # data.
     def create(self, request, *args, **kwargs):
         data = request.data.copy()
+
+        # If the user doesn't give the consent, the dialog's data is
+        # deleted
         if data.get('approved', '').lower() == 'false':
             Dialog.objects.get(dialog_id=kwargs['dialogId']).delete()
             return Response(status=status.HTTP_200_OK)
