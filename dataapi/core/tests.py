@@ -3,7 +3,7 @@ from rest_framework.test import APITestCase, APIClient
 
 from dataapi.core.models import Dialog, Consent
 
-# TODO: test wrong or missing values
+
 class DataApiTest(APITestCase):
 
     def test_post_data(self):
@@ -20,6 +20,29 @@ class DataApiTest(APITestCase):
         self.assertEqual(data.language, 'EN')
         self.assertEqual(data.text, 'Start at the end and work back.')
 
+    def test_post_data_duplicate(self):
+        """Test POST `data/` endpoint with not unique dialog id"""
+        client = APIClient()
+        response = client.post('/data/1/2', {'text': 'Message', 'language': 'EN'})
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(len(Dialog.objects.all()), 1)
+
+        response = client.post('/data/1/2', {'text': 'Another message with same dialogId', 'language': 'EN'})
+        self.assertEqual(response.status_code, 400)
+
+    def test_post_data_wrong_payload(self):
+        """Test POST `data/` endpoint with wrong payload"""
+        client = APIClient()
+        response = client.post('/data/1/2', {'WRONG': 'Message', 'language': 'EN'})
+
+        self.assertEqual(response.status_code, 400)
+
+    def test_post_data_wrong_url(self):
+        """Test POST `data/` endpoint with wrong payload"""
+        client = APIClient()
+        response = client.post('/data/1', {'WRONG': 'Message', 'language': 'EN'})
+
+        self.assertEqual(response.status_code, 404)
 
     def test_get_data(self):
         """Test GET `data/` endpoint"""
@@ -131,7 +154,7 @@ class DataApiTest(APITestCase):
         self.assertEqual(len(response.data.get('results')), 20)
 
     def test_post_consents(self):
-        """Test POST `consents/` result"""
+        """Test POST `consents/` endpoint result"""
 
         dialog = Dialog.objects.create(
             customer_id=1,
@@ -154,3 +177,10 @@ class DataApiTest(APITestCase):
         response = client.post('/consents/1', {'approved': 'false'})
         self.assertEqual(len(Dialog.objects.all()), 0)
         self.assertEqual(len(Consent.objects.all()), 0)
+
+    def test_post_consents_wrong_dialogis(self):
+        """Test POST `consents/` endopoint with non existing dialogid"""
+
+        client = APIClient()
+        response = client.post('/consents/122', {'approved': 'true'})
+        self.assertEqual(response.status_code, 400)
