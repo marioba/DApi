@@ -57,7 +57,7 @@ to the database
 This will start the Django app listening on [[http://localhost:8000]]
 
 * Endpoints
-It can be used, for example from the command line with cURL like this:
+
 ** Push new data
 To insert new data, the endpoint =POST /data/${customerId}/${dialogId}= is defined. 
 
