@@ -5,7 +5,7 @@ PostgreSQL and runs inside 2 Docker containers defined in the
 
 Django is a full-stack open-source web framework and follows
 a Model View Template type of architecture. It is comprised of
-a set of components and modules that aids in faster development
+a set of components and modules that aids in faster development.
 
 Django REST framework is a powerful and flexible toolkit for building
 Web APIs. Its main benefit is that it makes serialization very easy.
@@ -66,7 +66,7 @@ It can be used like this:
 
 An alternative would have been to pass the "dialogId" and the
 "customerId" paramenters used for the creation, in the payload, instead of as path
-parameters, avoiding to use a url that at the time it is called
+parameters, avoiding to use a url that, at the time it is called,
 represents a resource that has not yet been created.
 
 ** Set the user's consent
@@ -84,8 +84,10 @@ parameter to the body of the Dialog creation POST request).
 
 ** Retrieve data
 The =GET /data/(?language=${language}|customerId=${customerId})=
-endpoint is used to retrieve stored for which there is the user's
-consent. It is paginated and sorted by most recent data first.
+endpoint is used to retrieve stored dialogs for which there is the user's
+consent. It is paginated and sorted by most recent data first. The
+pagination accepts a single number page number in the request query
+parameters e.g. =?page=4=.
 
 #+begin_src sh
   # The query params are optional
