@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
 
 from dataapi.core.models import Dialog, Consent
 
@@ -14,6 +15,10 @@ class DialogSerializer(serializers.ModelSerializer):
         model = Dialog
         fields = ['customerId', 'dialogId', 'text', 'language']
 
+    def validate(self, data):
+        if Dialog.objects.filter(dialog_id=data.get('dialog_id')).exists():
+            raise ValidationError('DialogId already exists')
+        return data
 
 class ConsentSerializer(serializers.ModelSerializer):
 
