@@ -27,6 +27,8 @@ little effort.
 ** Data Model
 The datamodel is composed by two tables. =Dialog= and =Consent=.
 
+[[./assets/datamodel.png]]
+
 The =Dialog= table represent the customer's input during their dialog
 with the chatbot. Although the endpoint is called "data" it has been
 avoided to use a generic name like "data" for the table in favor of
@@ -87,7 +89,7 @@ The =GET /data/(?language=${language}|customerId=${customerId})=
 endpoint is used to retrieve stored dialogs for which there is the user's
 consent. It is paginated and sorted by most recent data first. The
 pagination accepts a single number page number in the request query
-parameters e.g. =?page=4=.
+parameters e.g. =?page=4= (100 elements per page).
 
 #+begin_src sh
   # The query params are optional
