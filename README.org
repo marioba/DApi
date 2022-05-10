@@ -44,6 +44,8 @@ table that has a one-to-one relationship with =Dialog=. An alternative
 might have been to record the consent as a =Dialog= field and use a
 =PATCH data/= endpoint to update it.
 
+The customer could also be stored in a separate table, especially if
+additional customer data needs to be recorded.
 * Run the application
 To run the application run the =docker-compose up= command from the top
 level directory of the repository and run the Django migrations
@@ -130,3 +132,10 @@ then push it out to Postgres later (maybe only when the consent is given),
 could help to ensure good write performances and less load on the
 RDBMS.
 
+Since this is a prototype, there are some infrastructure aspects that
+need to be investigated further if the project goes into production.
+Some of these aspects are:
+- Using a real production server to serve Django, instead of the
+  development server included in Django.
+- Restricting access to the application.
+- Configure the database in more detail.
